@@ -153,12 +153,18 @@ let audioCtx;
 function initAudio(){
   if(!audioCtx){
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    audioCtx.onstatechange = () => {
+      if(audioCtx.state === "suspended" || audioCtx.state === "interrupted"){
+        audioCtx.resume();
+      }
+    };
   }
 }
 
 function playBeep(freq, duration, type="square", volume=0.1){
   initAudio();
-  if(audioCtx.state === "suspended") audioCtx.resume();
+  if(audioCtx.state !== "running") audioCtx.resume();
 
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
@@ -175,20 +181,15 @@ function playBeep(freq, duration, type="square", volume=0.1){
 }
 
 /* =========================
-   🎵 INICIO (PC + MÓVIL)
+   🎵 INICIO (ESTABLE MÓVIL)
    ========================= */
 
 function startGame(){
 
-  // Crear contexto dentro del gesto real
-  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  initAudio();
+  if(audioCtx.state !== "running") audioCtx.resume();
 
-  // Desbloquear contexto si está suspendido
-  if(audioCtx.state === "suspended"){
-    audioCtx.resume();
-  }
-
-  // Forzar desbloqueo con beep mínimo
+  // desbloqueo silencioso
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
   gain.gain.value = 0.0001;
@@ -197,13 +198,17 @@ function startGame(){
   osc.start();
   osc.stop(audioCtx.currentTime + 0.02);
 
-  // IMPORTANTE: play directo dentro del gesto
-  music.currentTime = 0;
-  music.play().then(()=>{
-      console.log("Música iniciada correctamente");
-  }).catch(err=>{
-      console.log("Error de reproducción:", err);
-  });
+  function safePlay(){
+    music.currentTime = 0;
+    music.play().catch(()=>{
+      setTimeout(()=>{
+        if(audioCtx.state !== "running") audioCtx.resume();
+        music.play().catch(()=>{});
+      },150);
+    });
+  }
+
+  safePlay();
 
   start.classList.add("hidden");
   question.classList.remove("hidden");
@@ -425,6 +430,7 @@ function accept(){
 
 </body>
 </html>
+
 
 
 
