@@ -111,15 +111,22 @@ canvas{
   <p>TE HAZ GANADO MI CORAZON Y UN RAMO ❤️</p>
 </div>
 
+<!-- 🎵 TU MUSICA DESDE GITHUB -->
 <audio id="music" loop>
-  <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_5e3c0f7fa1.mp3?filename=romantic-love-112199.mp3" type="audio/mpeg">
+  <source src="TU_MUSICA_GITHUB_AQUI" type="audio/mpeg">
 </audio>
+
+<!-- 🔊 EFECTOS 8-BIT -->
+<audio id="sfxStart" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_4014b2.mp3?filename=retro-game-notification-212.mp3"></audio>
+<audio id="sfxHover" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_4f5b33.mp3?filename=8bit-click-124467.mp3"></audio>
+<audio id="sfxYes" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_9c1e4e.mp3?filename=retro-coin-collect-38234.mp3"></audio>
 
 <script>
 document.addEventListener("keydown",()=>{
   start.classList.add("hidden");
   question.classList.remove("hidden");
   music.play();
+  sfxStart.play();
 },{once:true});
 
 /* BOTÓN NO */
@@ -127,7 +134,11 @@ const noBtn = document.getElementById("noBtn");
 const container = document.getElementById("question");
 container.style.position="relative";
 
-noBtn.addEventListener("mouseover",()=>moveNo());
+noBtn.addEventListener("mouseover",()=>{
+  moveNo();
+  sfxHover.currentTime=0;
+  sfxHover.play();
+});
 
 function moveNo(){
   const btnWidth=noBtn.offsetWidth;
@@ -212,9 +223,28 @@ function animateFireworks(){
   requestAnimationFrame(animateFireworks);
 }
 
+/* 📩 ENVÍO DE CORREO */
+function sendEmail(){
+  fetch("https://formspree.io/f/xzdapkoo", {
+    method: "POST",
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      message: "💖 ACEPTÓ SER TU 14 DE FEBRERO 💖",
+      date: new Date().toLocaleString(),
+      userAgent: navigator.userAgent
+    })
+  });
+}
+
 function accept(){
   question.classList.add("hidden");
   final.classList.remove("hidden");
+
+  sfxYes.play();
+  sendEmail();
+
   setInterval(createFirework,700);
   animateFireworks();
 }
