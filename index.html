@@ -93,6 +93,35 @@ canvas{
 
 <body>
 
+<!-- 🔊 BOTÓN MUTE -->
+<button id="muteBtn" style="
+position:fixed;
+top:20px;
+right:20px;
+z-index:10;
+padding:10px 15px;
+font-size:0.6rem;
+border:3px solid #fff;
+background:#000;
+color:#fff;
+box-shadow:4px 4px 0px #ff2e74;
+cursor:pointer;">
+🔊 SOUND ON
+</button>
+
+<!-- 🕹️ SCOREBOARD -->
+<div id="scoreBoard" style="
+position:fixed;
+top:20px;
+left:20px;
+z-index:10;
+font-size:0.6rem;
+color:#00ffcc;
+text-shadow:3px 3px 0px #000;">
+INSERT COIN<br>
+SCORE: 0000
+</div>
+
 <canvas id="bgHearts"></canvas>
 <canvas id="fireworks"></canvas>
 
@@ -111,15 +140,9 @@ canvas{
   <p>TE HAZ GANADO MI CORAZON Y UN RAMO ❤️</p>
 </div>
 
-<!-- 🎵 TU MUSICA DESDE GITHUB -->
 <audio id="music" loop>
   <source src="music5.mp3" type="audio/mpeg">
 </audio>
-
-<!-- 🔊 EFECTOS 8-BIT -->
-<audio id="sfxStart" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_4014b2.mp3?filename=retro-game-notification-212.mp3"></audio>
-<audio id="sfxHover" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_4f5b33.mp3?filename=8bit-click-124467.mp3"></audio>
-<audio id="sfxYes" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_9c1e4e.mp3?filename=retro-coin-collect-38234.mp3"></audio>
 
 <script>
 
@@ -143,7 +166,6 @@ function playBeep(freq, duration, type="square", volume=0.1){
 
   osc.type = type;
   osc.frequency.value = freq;
-
   gain.gain.value = volume;
 
   osc.connect(gain);
@@ -159,15 +181,11 @@ function playBeep(freq, duration, type="square", volume=0.1){
 
 document.addEventListener("keydown",()=>{
   initAudio();
-
   start.classList.add("hidden");
   question.classList.remove("hidden");
   music.play();
-
-  // Sonido inicio arcade
   playBeep(600,0.1);
   setTimeout(()=>playBeep(800,0.1),100);
-
 },{once:true});
 
 
@@ -181,10 +199,10 @@ container.style.position="relative";
 
 noBtn.addEventListener("mouseover",()=>{
   moveNo();
-
-  // Sonido escape 8-bit
   playBeep(300,0.08);
   setTimeout(()=>playBeep(200,0.08),60);
+  updateScore(10);
+  vibrate(50);
 });
 
 function moveNo(){
@@ -255,7 +273,6 @@ function createFirework(){
   const x=Math.random()*canvas.width;
   const y=Math.random()*canvas.height/2;
 
-  // sonido explosión retro
   playBeep(120,0.1);
   setTimeout(()=>playBeep(80,0.15,"sawtooth",0.15),50);
 
@@ -304,6 +321,42 @@ function sendEmail(){
 
 
 /* =========================
+   🕹️ SCORE + VIBRACIÓN
+   ========================= */
+
+let score = 0;
+const scoreBoard = document.getElementById("scoreBoard");
+
+function updateScore(points){
+  score += points;
+  scoreBoard.innerHTML = "INSERT COIN<br>SCORE: " + score.toString().padStart(4,"0");
+}
+
+function vibrate(pattern){
+  if(navigator.vibrate){
+    navigator.vibrate(pattern);
+  }
+}
+
+
+/* =========================
+   🔊 BOTÓN MUTE
+   ========================= */
+
+let isMuted = false;
+const muteBtn = document.getElementById("muteBtn");
+
+muteBtn.addEventListener("click",()=>{
+  if(audioCtx){
+    isMuted ? audioCtx.resume() : audioCtx.suspend();
+  }
+  music.muted = !music.muted;
+  isMuted = !isMuted;
+  muteBtn.textContent = isMuted ? "🔇 SOUND OFF" : "🔊 SOUND ON";
+});
+
+
+/* =========================
    BOTÓN SÍ
    ========================= */
 
@@ -311,10 +364,12 @@ function accept(){
   question.classList.add("hidden");
   final.classList.remove("hidden");
 
-  // sonido victoria estilo NES
   playBeep(523,0.1);
   setTimeout(()=>playBeep(659,0.1),120);
   setTimeout(()=>playBeep(784,0.2),240);
+
+  updateScore(500);
+  vibrate([100,50,100]);
 
   sendEmail();
 
@@ -326,7 +381,3 @@ function accept(){
 
 </body>
 </html>
-
-
-
-
