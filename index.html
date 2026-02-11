@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valentine PRO 💖</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+body{
+  overflow:hidden;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:radial-gradient(circle at center,#ff4e8a,#ff0066);
+  color:white;
+  text-align:center;
+}
+
+/* Fondo corazones */
+#bgHearts{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  pointer-events:none;
+  z-index:0;
+}
+
+.screen{
+  position:absolute;
+  z-index:2;
+  transition:opacity .8s ease, transform .8s ease;
+}
+.hidden{opacity:0;pointer-events:none;transform:scale(.8)}
+
+h1{
+  font-size:3rem;
+  margin-bottom:20px;
+  animation:floatingText 3s ease-in-out infinite;
+}
+
+/* Texto flotando */
+@keyframes floatingText{
+  0%{transform:translateY(0px)}
+  50%{transform:translateY(-15px)}
+  100%{transform:translateY(0px)}
+}
+
+button{
+  padding:15px 30px;
+  font-size:1.2rem;
+  border:none;
+  border-radius:12px;
+  cursor:pointer;
+  margin:10px;
+  transition:.3s;
+}
+
+.yes{background:#fff;color:#ff2e74}
+.no{
+  background:#ff2e74;
+  color:#fff;
+  position:relative;
+}
+
+/* Temblor */
+@keyframes shake{
+  0%{transform:translate(0)}
+  25%{transform:translate(-5px,5px)}
+  50%{transform:translate(5px,-5px)}
+  75%{transform:translate(-5px,5px)}
+  100%{transform:translate(0)}
+}
+.shake{
+  animation:shake .2s infinite;
+}
+
+canvas{
+  position:fixed;
+  top:0;
+  left:0;
+  pointer-events:none;
+}
+
+.fade-in{animation:fadeIn 1s forwards}
+@keyframes fadeIn{
+  from{opacity:0;transform:scale(.8)}
+  to{opacity:1;transform:scale(1)}
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="bgHearts"></canvas>
+<canvas id="fireworks"></canvas>
+
+<div id="start" class="screen">
+  <h1>Presiona cualquier tecla 💌</h1>
+</div>
+
+<div id="question" class="screen hidden">
+  <h1>¿Quieres ser mi Valentine? 💖</h1>
+  <button class="yes" onclick="accept()">SÍ</button>
+  <button class="no" id="noBtn">NO</button>
+</div>
+
+<div id="final" class="screen hidden">
+  <h1>Sabía que dirías que sí 💕</h1>
+  <p>Eres lo mejor que me ha pasado.</p>
+  <p>Te amo infinitamente ❤️</p>
+</div>
+
+<audio id="music" loop>
+  <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_5e3c0f7fa1.mp3?filename=romantic-love-112199.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+/* ---------- ENTRADA ---------- */
+document.addEventListener("keydown",()=>{
+  start.classList.add("hidden");
+  question.classList.remove("hidden");
+  music.play();
+},{once:true});
+
+/* ---------- BOTÓN NO ---------- */
+const noBtn = document.getElementById("noBtn");
+const container = document.getElementById("question");
+
+container.style.position = "relative";
+
+noBtn.addEventListener("mouseover",()=>{ moveNo(); });
+
+function moveNo(){
+
+  noBtn.classList.add("shake");
+
+  const btnWidth = noBtn.offsetWidth;
+  const btnHeight = noBtn.offsetHeight;
+
+  const maxX = container.clientWidth - btnWidth;
+  const maxY = container.clientHeight - btnHeight;
+
+  const x = Math.random() * maxX;
+  const y = Math.random() * maxY;
+
+  noBtn.style.position = "absolute";
+  noBtn.style.left = x + "px";
+  noBtn.style.top = y + "px";
+
+  const containerRect = container.getBoundingClientRect();
+
+  createTrail(
+    containerRect.left + x,
+    containerRect.top + y
+  );
+
+  setTimeout(()=>{ noBtn.classList.remove("shake"); },500);
+}
+
+/* Partículas al escapar (CORREGIDAS EN PX) */
+function createTrail(x,y){
+  for(let i=0;i<8;i++){
+    const heart = document.createElement("div");
+    heart.innerHTML="💖";
+    heart.style.position="absolute";
+    heart.style.left = x + "px";
+    heart.style.top = y + "px";
+    heart.style.fontSize="20px";
+    heart.style.pointerEvents="none";
+    heart.style.animation="floatUp 1s forwards";
+    document.body.appendChild(heart);
+    setTimeout(()=>heart.remove(),1000);
+  }
+}
+
+const style = document.createElement('style');
+style.innerHTML=`
+@keyframes floatUp{
+  from{transform:translateY(0);opacity:1}
+  to{transform:translateY(-60px);opacity:0}
+}`;
+document.head.appendChild(style);
+
+/* ---------- ACEPTAR ---------- */
+function accept(){
+  question.classList.add("hidden");
+  final.classList.remove("hidden");
+  startFireworks();
+}
+
+/* ---------- FONDO CORAZONES ---------- */
+const bg = document.getElementById("bgHearts");
+const bgCtx = bg.getContext("2d");
+bg.width=window.innerWidth;
+bg.height=window.innerHeight;
+
+let hearts=[];
+
+for(let i=0;i<50;i++){
+  hearts.push({
+    x:Math.random()*bg.width,
+    y:Math.random()*bg.height,
+    size:Math.random()*20+10,
+    speed:Math.random()*1+0.5
+  });
+}
+
+function drawHeart(x,y,size){
+  bgCtx.beginPath();
+  bgCtx.fillStyle="rgba(255,255,255,0.4)";
+  bgCtx.moveTo(x,y);
+  bgCtx.arc(x-size/4,y-size/4,size/4,0,Math.PI*2);
+  bgCtx.arc(x+size/4,y-size/4,size/4,0,Math.PI*2);
+  bgCtx.lineTo(x,y+size/2);
+  bgCtx.fill();
+}
+
+function animateHearts(){
+  bgCtx.clearRect(0,0,bg.width,bg.height);
+  hearts.forEach(h=>{
+    drawHeart(h.x,h.y,h.size);
+    h.y-=h.speed;
+    if(h.y<0) h.y=bg.height;
+  });
+  requestAnimationFrame(animateHearts);
+}
+animateHearts();
+
+/* ---------- FUEGOS ARTIFICIALES ---------- */
+const canvas = document.getElementById("fireworks");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+let particles=[];
+
+function createFirework(){
+  const x=Math.random()*canvas.width;
+  const y=Math.random()*canvas.height/2;
+  for(let i=0;i<100;i++){
+    particles.push({
+      x,y,
+      angle:Math.random()*2*Math.PI,
+      speed:Math.random()*5+2,
+      life:100
+    });
+  }
+}
+
+function animateFireworks(){
+  ctx.fillStyle="rgba(0,0,0,0.2)";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  particles.forEach((p,i)=>{
+    p.x+=Math.cos(p.angle)*p.speed;
+    p.y+=Math.sin(p.angle)*p.speed;
+    p.life--;
+    ctx.fillStyle="hsl("+Math.random()*360+",100%,60%)";
+    ctx.fillRect(p.x,p.y,3,3);
+    if(p.life<=0) particles.splice(i,1);
+  });
+  requestAnimationFrame(animateFireworks);
+}
+
+function startFireworks(){
+  setInterval(createFirework,700);
+  animateFireworks();
+}
+</script>
+
+</body>
+</html>
