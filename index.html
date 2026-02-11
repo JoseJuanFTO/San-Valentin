@@ -122,22 +122,69 @@ canvas{
 <audio id="sfxYes" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_9c1e4e.mp3?filename=retro-coin-collect-38234.mp3"></audio>
 
 <script>
+
+/* =========================
+   🎮 MOTOR DE SONIDO 8-BIT
+   ========================= */
+
+let audioCtx;
+
+function initAudio(){
+  if(!audioCtx){
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+}
+
+function playBeep(freq, duration, type="square", volume=0.1){
+  initAudio();
+
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+
+  osc.type = type;
+  osc.frequency.value = freq;
+
+  gain.gain.value = volume;
+
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  osc.start();
+  osc.stop(audioCtx.currentTime + duration);
+}
+
+/* =========================
+   🎵 INICIO
+   ========================= */
+
 document.addEventListener("keydown",()=>{
+  initAudio();
+
   start.classList.add("hidden");
   question.classList.remove("hidden");
   music.play();
-  sfxStart.play();
+
+  // Sonido inicio arcade
+  playBeep(600,0.1);
+  setTimeout(()=>playBeep(800,0.1),100);
+
 },{once:true});
 
-/* BOTÓN NO */
+
+/* =========================
+   BOTÓN NO
+   ========================= */
+
 const noBtn = document.getElementById("noBtn");
 const container = document.getElementById("question");
 container.style.position="relative";
 
 noBtn.addEventListener("mouseover",()=>{
   moveNo();
-  sfxHover.currentTime=0;
-  sfxHover.play();
+
+  // Sonido escape 8-bit
+  playBeep(300,0.08);
+  setTimeout(()=>playBeep(200,0.08),60);
 });
 
 function moveNo(){
@@ -153,7 +200,11 @@ function moveNo(){
   noBtn.style.top=y+"px";
 }
 
-/* FONDO PIXEL CORAZONES */
+
+/* =========================
+   FONDO PIXEL CORAZONES
+   ========================= */
+
 const bg=document.getElementById("bgHearts");
 const bgCtx=bg.getContext("2d");
 bg.width=window.innerWidth;
@@ -189,7 +240,11 @@ function animateHearts(){
 }
 animateHearts();
 
-/* FUEGOS ARTIFICIALES PIXEL */
+
+/* =========================
+   FUEGOS ARTIFICIALES PIXEL
+   ========================= */
+
 const canvas=document.getElementById("fireworks");
 const ctx=canvas.getContext("2d");
 canvas.width=window.innerWidth;
@@ -199,6 +254,11 @@ let particles=[];
 function createFirework(){
   const x=Math.random()*canvas.width;
   const y=Math.random()*canvas.height/2;
+
+  // sonido explosión retro
+  playBeep(120,0.1);
+  setTimeout(()=>playBeep(80,0.15,"sawtooth",0.15),50);
+
   for(let i=0;i<60;i++){
     particles.push({
       x,y,
@@ -223,7 +283,11 @@ function animateFireworks(){
   requestAnimationFrame(animateFireworks);
 }
 
-/* 📩 ENVÍO DE CORREO */
+
+/* =========================
+   📩 ENVÍO DE CORREO
+   ========================= */
+
 function sendEmail(){
   fetch("https://formspree.io/f/xzdapkoo", {
     method: "POST",
@@ -238,20 +302,31 @@ function sendEmail(){
   });
 }
 
+
+/* =========================
+   BOTÓN SÍ
+   ========================= */
+
 function accept(){
   question.classList.add("hidden");
   final.classList.remove("hidden");
 
-  sfxYes.play();
+  // sonido victoria estilo NES
+  playBeep(523,0.1);
+  setTimeout(()=>playBeep(659,0.1),120);
+  setTimeout(()=>playBeep(784,0.2),240);
+
   sendEmail();
 
   setInterval(createFirework,700);
   animateFireworks();
 }
+
 </script>
 
 </body>
 </html>
+
 
 
 
